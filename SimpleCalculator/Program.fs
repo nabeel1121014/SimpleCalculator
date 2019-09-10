@@ -8,10 +8,20 @@ let getNumbersFromEquation(equation: String)=
      *)
     let index = System.Text.RegularExpressions.Regex.Match(equation,"\d").Index
     equation.[index..]
+    
 let splitNumbers(equation: String, delimiters: String[]) : String[]=
     (* Split the number based on specified delimiters and return array*)
     equation.Split(delimiters,StringSplitOptions.RemoveEmptyEntries)
     
+let validateNumbers(numbers: String[]) =
+    (* Raise invalidArg Exception if there are negative numbers *)
+    let mutable  errorMessage = ""
+    for number in numbers do
+        if Int32.Parse(number)<0 then
+            errorMessage <- errorMessage + number + " "
+    if errorMessage.Length >0 then
+        invalidArg "numbers"  (sprintf "negatives not allowed  %s." errorMessage)
+        
 let summation(numbers: String[])=
     (* Calculate the summations of all numbers *)
     let mutable  result = 0 
@@ -27,10 +37,11 @@ let ParseDelimitersFromEquationLine(equation: String): String[]=
 let getDelimiters(equation: String)=
     (*Combine the default delimiters ',' and '\n' with the custom  *)
     let defaultDelimiters : String [] = [|",";"\\n"|]
-    let mutable customDelimiters: String[] = [||]
-    if equation.Chars(0) = '/' then
-        customDelimiters <- ParseDelimitersFromEquationLine(equation)
-    Array.concat [ customDelimiters ; defaultDelimiters ]
+    
+    if equation.Chars(0) = '/' then // If the equation starts with / then means there is customized delimiters
+        Array.concat [ ParseDelimitersFromEquationLine(equation) ; defaultDelimiters ]
+    else     
+        defaultDelimiters
     
 let processEquation(equation: String ) :int =
     (* Convert List of String numbers to integers and get summation *)
@@ -38,6 +49,7 @@ let processEquation(equation: String ) :int =
     let delimiters = getDelimiters(equation)
     let equationNumbers = getNumbersFromEquation(equation)
     let parsedNumbers = splitNumbers(equationNumbers, delimiters)
+    validateNumbers(parsedNumbers)
     let result = summation(parsedNumbers)
     result
             
@@ -52,7 +64,7 @@ let calculateResults(equation: String)=
 
 [<EntryPoint>]
 let main argv =
-    let mutable equation  = Console.ReadLine()
+    let equation  = Console.ReadLine()
     let sumResult= calculateResults(equation)
     printfn "summation  is %d" sumResult
     Console.ReadKey() |> ignore 
