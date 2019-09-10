@@ -29,12 +29,15 @@ let ParseDelimitersFromEquationLine(equation: String): String[]=
      (* Get the Custom delimiters specified in the equation
      Example //;\n  ";" will be returned *)
      
-     let matcher  = System.Text.RegularExpressions.Regex.Match(equation,"[.*]")
-     if matcher.Length =  0 then
-        [|equation.[2..2]|]
+     let matches  = System.Text.RegularExpressions.Regex.Matches(equation,"\\[(.*?)\\]")
+     let mutable delimiters =  [||]
+     if matches.Count =  0 then
+        delimiters <- [|equation.[2..2]|]
      else
-         [|matcher.Value|]
-
+         for matcher in matches do
+            let group= matcher.Groups.Item(1) // Get the value inside the patched groups inside the []
+            delimiters <- Array.concat [ delimiters ; [|group.Value|] ]      
+     delimiters   
     
 let getDelimiters(equation: String)=
     (*Combine the default delimiters ',' and '\n' with the custom  *)
@@ -75,6 +78,7 @@ let calculateResults(equation: String)=
 
 [<EntryPoint>]
 let main argv =
+    printfn "Please enter the equation to calculate: \n" 
     let equation  = Console.ReadLine()
     let sumResult= calculateResults(equation)
     printfn "summation  is %d" sumResult
