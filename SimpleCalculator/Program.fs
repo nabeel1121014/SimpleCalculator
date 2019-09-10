@@ -1,5 +1,4 @@
 ﻿open System
-open System.Text.RegularExpressions
 
 
 let getNumbersFromEquation(equation: String)=
@@ -10,7 +9,8 @@ let getNumbersFromEquation(equation: String)=
     equation.[index..]
     
 let splitNumbers(equation: String, delimiters: String[]) : String[]=
-    (* Split the number based on specified delimiters and return array*)
+    (* Split the number based on specified delimiters
+    return array of strings *)
     equation.Split(delimiters,StringSplitOptions.RemoveEmptyEntries)
     
 let validateNumbers(numbers: String[]) =
@@ -21,14 +21,10 @@ let validateNumbers(numbers: String[]) =
             errorMessage <- errorMessage + number + " "
     if errorMessage.Length >0 then
         invalidArg "numbers"  (sprintf "negatives not allowed  %s." errorMessage)
+let ignoreNumber(number :String) =
+    (*Check if the number more than 1000 should be ignored from the summation *)
+     Int32.Parse(number) > 1000 
         
-let summation(numbers: String[])=
-    (* Calculate the summations of all numbers *)
-    let mutable  result = 0 
-    for number in numbers do
-        result <- result + Int32.Parse(number)
-    result
-    
 let ParseDelimitersFromEquationLine(equation: String): String[]=
      (* Get the Custom delimiters specified in the equation
      Example //;\n  ";" will be returned *)
@@ -37,11 +33,20 @@ let ParseDelimitersFromEquationLine(equation: String): String[]=
 let getDelimiters(equation: String)=
     (*Combine the default delimiters ',' and '\n' with the custom  *)
     let defaultDelimiters : String [] = [|",";"\\n"|]
-    
     if equation.Chars(0) = '/' then // If the equation starts with / then means there is customized delimiters
         Array.concat [ ParseDelimitersFromEquationLine(equation) ; defaultDelimiters ]
     else     
         defaultDelimiters
+ 
+let summation(numbers: String[])=
+    (* Calculate the summations of all numbers *)
+    let mutable  result = 0 
+    for number in numbers do
+        if ignoreNumber(number) then // Ignore number more than 1000
+            result <- result + 0
+        else    
+            result <- result + Int32.Parse(number)
+    result
     
 let processEquation(equation: String ) :int =
     (* Convert List of String numbers to integers and get summation *)
@@ -49,7 +54,7 @@ let processEquation(equation: String ) :int =
     let delimiters = getDelimiters(equation)
     let equationNumbers = getNumbersFromEquation(equation)
     let parsedNumbers = splitNumbers(equationNumbers, delimiters)
-    validateNumbers(parsedNumbers)
+    validateNumbers(parsedNumbers) // Validate that numbers dose not contain negative  
     let result = summation(parsedNumbers)
     result
             
