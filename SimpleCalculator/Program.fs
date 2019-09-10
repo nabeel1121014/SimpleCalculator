@@ -28,7 +28,13 @@ let ignoreNumber(number :String) =
 let ParseDelimitersFromEquationLine(equation: String): String[]=
      (* Get the Custom delimiters specified in the equation
      Example //;\n  ";" will be returned *)
-     [|equation.[2..2]|]
+     
+     let matcher  = System.Text.RegularExpressions.Regex.Match(equation,"[.*]")
+     if matcher.Length =  0 then
+        [|equation.[2..2]|]
+     else
+         [|matcher.Value|]
+
     
 let getDelimiters(equation: String)=
     (*Combine the default delimiters ',' and '\n' with the custom  *)
